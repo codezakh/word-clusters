@@ -6,16 +6,20 @@ import functools
 import spacy
 
 class RawStream:
-    def __init__(self, fd):
+    def __init__(self, fd, iteration_hook=None, **kwargs):
         self._file_desc = fd
         self.io_count = 0
+        self.iteration_hook = iteration_hook
 
 
     def __iter__(self):
         for line in self._file_desc:
             doc = json.loads(line)
-            self.io += 1
-            yield doc
+            self.io_count += 1
+            if self.iteration_hook is not None:
+                yield self.iteration_hook(doc, **kwargs)
+            else:
+                yield doc
 
 
 
