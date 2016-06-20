@@ -1,1 +1,1 @@
-Word2vec experimentation on a small corpus of medical extracts.
+Experimenting with using word embeddings to find relationships within biomedical papers.
