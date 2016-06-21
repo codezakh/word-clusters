@@ -6,13 +6,11 @@ import logging
 import sys
 import collections
 import contextlib
-import functools
 
 import spacy
 import gensim
-import numpy as np
 
-from preprocess_utils import approp_doc 
+from preprocess_utils import approp_doc, walk_dependencies
 
 class RawStream:
     def __init__(self, fd, iteration_hook=None, **kwargs):
@@ -91,6 +89,8 @@ def make_parser():
             type=str,
             help='Location to dump output.',
             default='./dump')
+    parser.add_argument('--debug',
+            type='store_true')
     return parser
 
 
@@ -114,14 +114,20 @@ if __name__ == '__main__':
         for doc in nlp.pipe(stream, n_threads=4):
             try:
                 streambuffer.append(
-                        json.dumps({'bow':list(approp_doc(doc))}))
+                        json.dumps(
+                            {'bow':list(approp_doc(doc)),
+                                'idx':stream.io_count}
+                            ))
             except Exception as error:
                 stream.fault_handler(error, doc)
+
+            if args.debug:
+                print(stream.io_count, '\r')
 
             if stream.io_count == args.run_limit:
                 logger.info('run_limit reached {}'.format(args.run_limit))
                 break
 
-            elif stream.io_count % 1200 == 0:
+            elif stream.io_count % 1000 == 0:
                 logger.info(stream)
                 logger.info(streambuffer)
