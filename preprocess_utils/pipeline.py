@@ -4,12 +4,13 @@ import itertools
 import argparse
 import logging
 import sys
+import collections
 
 import spacy
 import gensim
 import numpy as np
 
-from preprocess_utils import preprocess_utils as pt
+from preprocess_utils import approp_doc 
 
 class RawStream:
     def __init__(self, fd, iteration_hook=None, **kwargs):
@@ -34,7 +35,7 @@ class RawStream:
                 yield doc
 
     def __repr__(self):
-        return '({cnt},{fd},{hook_given})'.format(
+        return 'RawStream:({cnt},{fd},{hook_given})'.format(
                 cnt=self.io_count,
                 fd=self._file_desc,
                 hook_given=self.iteration_hook is None)
@@ -46,6 +47,27 @@ class RawStream:
         self.logger.error('thrown at {cnt}:{error}'.format(
             cnt=self.io_count,
             error=error))
+
+
+class StreamBuffer:
+    def __init__(self, buf_size=1000, flush_loc=None):
+        self.container = collections.deque()
+        self.buf_size = buf_size
+        self.flush_loc = flush_loc
+    def flush(self):
+        with open(flush_loc, 'w',buffering=-1) as fd:
+            for item in self.container:
+                fd.write(item)
+        self.container.clear()
+    def append(self, item):
+        if len(self.container)==self.buf_size:
+            self.flush()
+        self.container.append(item)
+    def __repr__(self):
+        return 'StreamBuffer:({buf_size},{container_size},{flush_loc})'.format(
+                buf_size=self.buf_size,
+                container_size=len(self.container),
+                flush_loc = self.flush_loc)
 
 def make_parser():
     parser = argparse.ArgumentParser(
@@ -73,11 +95,14 @@ if __name__ == '__main__':
     logger = logging.getLogger(__name__)
 
     nlp = spacy.en.English()
+
     with open(args.data, mode='r',buffering=-1) as fd:
         stream = RawStream(fd,iteration_hook=args.hook)
+        streambuffer = StreamBuffer(flush_loc='~/Source/floc.json')
         logger.info(stream)
+        logger.info(streambuffer)
         for doc in nlp.pipe(stream, n_threads=4):
-            list(pt.approp_doc(doc))
+            streambuffer.append(list(approp_doc(doc)))
             if stream.io_count == args.run_limit:
                 logger.info('run_limit reached {}'.format(args.run_limit))
                 break
