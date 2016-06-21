@@ -5,6 +5,8 @@ import argparse
 import logging
 import sys
 import collections
+import contextlib
+import functools
 
 import spacy
 import gensim
@@ -48,7 +50,6 @@ class RawStream:
             cnt=self.io_count,
             error=error))
 
-
 class StreamBuffer:
     def __init__(self, buf_size=1000, flush_loc=None):
         self.container = collections.deque()
@@ -68,6 +69,9 @@ class StreamBuffer:
                 buf_size=self.buf_size,
                 container_size=len(self.container),
                 flush_loc = self.flush_loc)
+
+    def close(self):
+        self.flush()
 
 def make_parser():
     parser = argparse.ArgumentParser(
@@ -100,9 +104,9 @@ if __name__ == '__main__':
 
     nlp = spacy.en.English()
 
-    with open(args.data, mode='r',buffering=-1) as fd:
+    with open(args.data, mode='r',buffering=-1) as fd, \
+    contextlib.closing(StreamBuffer(flush_loc=args.output)) as streambuffer:
         stream = RawStream(fd,iteration_hook=args.hook)
-        streambuffer = StreamBuffer(flush_loc=args.output)
         logger.info(stream)
         logger.info(streambuffer)
 
