@@ -3,3 +3,5 @@
 *.pkl
 .ipynb_checkpoints/**
 *.ipynb
+err_dump.txt
+**/*.log

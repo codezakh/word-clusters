@@ -15,7 +15,6 @@ from IPython.core.display import clear_output
 
 import gensim as gs
 import numpy as np
-import seaborn as sns
 import matplotlib.pyplot as plt
 import scipy
 import pandas as pd
@@ -140,3 +139,13 @@ def best_estimator_word_display(estimator,index2word,topn=10,
         index2word2=None):
     imps = np.argsort(estimator.feature_importances_)[::-1]
     return [index2word[idx] for idx in imps[:topn]]
+
+
+def approp_doc(doc):
+    for tok in doc:
+        if not tok.is_alpha:
+            continue
+        elif pt.is_acronym(unicode(tok)) and not tok.is_punct and not tok.is_stop and not tok.like_num:
+            yield unicode(tok)
+        elif not tok.like_num and not tok.is_stop and not tok.is_punct and tok.is_alpha:
+            yield tok.lemma_
