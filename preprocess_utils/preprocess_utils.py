@@ -145,7 +145,7 @@ def approp_doc(doc):
     for tok in doc:
         if not tok.is_alpha:
             continue
-        elif pt.is_acronym(unicode(tok)) and not tok.is_punct and not tok.is_stop and not tok.like_num:
+        elif is_acronym(unicode(tok)) and not tok.is_punct and not tok.is_stop and not tok.like_num:
             yield unicode(tok)
         elif not tok.like_num and not tok.is_stop and not tok.is_punct and tok.is_alpha:
             yield tok.lemma_

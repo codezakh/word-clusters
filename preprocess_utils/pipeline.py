@@ -101,8 +101,18 @@ if __name__ == '__main__':
         streambuffer = StreamBuffer(flush_loc='~/Source/floc.json')
         logger.info(stream)
         logger.info(streambuffer)
+
+
         for doc in nlp.pipe(stream, n_threads=4):
-            streambuffer.append(list(approp_doc(doc)))
+            try:
+                streambuffer.append(list(approp_doc(doc)))
+            except Exception as error:
+                stream.fault_handler(error, doc)
+
             if stream.io_count == args.run_limit:
                 logger.info('run_limit reached {}'.format(args.run_limit))
                 break
+
+            elif stream.io_count % 1200 == 0:
+                logger.info(stream)
+                logger.info(streambuffer)
