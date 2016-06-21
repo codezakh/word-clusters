@@ -90,7 +90,7 @@ def make_parser():
             help='Location to dump output.',
             default='./dump')
     parser.add_argument('--debug',
-            type='store_true')
+            action='store_true')
     return parser
 
 
