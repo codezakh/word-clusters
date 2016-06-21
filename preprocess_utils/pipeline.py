@@ -43,7 +43,7 @@ class RawStream:
 
     def fault_handler(self, error, doc):
         with open('err_dump.txt', 'w') as err_dump:
-            err_dump.write(json.dumps(doc))
+            err_dump.write(unicode(doc))
         self.logger.error('thrown at {cnt}:{error}'.format(
             cnt=self.io_count,
             error=error))
@@ -55,7 +55,7 @@ class StreamBuffer:
         self.buf_size = buf_size
         self.flush_loc = flush_loc
     def flush(self):
-        with open(flush_loc, 'w',buffering=-1) as fd:
+        with open(self.flush_loc, 'a',buffering=-1) as fd:
             for item in self.container:
                 fd.write(item)
         self.container.clear()
@@ -106,7 +106,7 @@ if __name__ == '__main__':
         for doc in nlp.pipe(stream, n_threads=4):
             try:
                 streambuffer.append(
-                        json.dumps({'bow':list(approp_doc(doc)})))
+                        json.dumps({'bow':list(approp_doc(doc))}))
             except Exception as error:
                 stream.fault_handler(error, doc)
 
