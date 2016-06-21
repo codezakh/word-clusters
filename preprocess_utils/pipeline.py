@@ -83,6 +83,10 @@ def make_parser():
             help='A short hook to modify each document before being passed \
                     to spacy.',
             default='lambda i: i')
+    parser.add_argument('--output',
+            type=str,
+            help='Location to dump output.',
+            default='./dump')
     return parser
 
 
@@ -98,7 +102,7 @@ if __name__ == '__main__':
 
     with open(args.data, mode='r',buffering=-1) as fd:
         stream = RawStream(fd,iteration_hook=args.hook)
-        streambuffer = StreamBuffer(flush_loc='~/Source/floc.json')
+        streambuffer = StreamBuffer(flush_loc=args.output)
         logger.info(stream)
         logger.info(streambuffer)
 
