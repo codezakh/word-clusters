@@ -76,7 +76,7 @@ def make_parser():
     parser.add_argument('--data',
             help='Location of data.',
             required=True)
-    parser.add_argument('--run_limited', type=int,
+    parser.add_argument('--run_limit', type=int,
             help='Number of iterations to run for. If not specified, runs \
             until `StopIteration` is raised.')
     parser.add_argument('--hook', type=eval,
@@ -105,7 +105,8 @@ if __name__ == '__main__':
 
         for doc in nlp.pipe(stream, n_threads=4):
             try:
-                streambuffer.append(list(approp_doc(doc)))
+                streambuffer.append(
+                        json.dumps({'bow':list(approp_doc(doc)})))
             except Exception as error:
                 stream.fault_handler(error, doc)
 
