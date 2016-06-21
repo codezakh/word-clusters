@@ -42,8 +42,8 @@ class RawStream:
 
 
     def fault_handler(self, error, doc):
-        with open('err_dump.txt', 'w') as err_dump:
-            err_dump.write(unicode(doc))
+        with open('err_dump.txt', 'a') as err_dump:
+            err_dump.write(unicode(doc)+'\n')
         self.logger.error('thrown at {cnt}:{error}'.format(
             cnt=self.io_count,
             error=error))
@@ -57,7 +57,7 @@ class StreamBuffer:
     def flush(self):
         with open(self.flush_loc, 'a',buffering=-1) as fd:
             for item in self.container:
-                fd.write(item)
+                fd.write(item+'\n')
         self.container.clear()
     def append(self, item):
         if len(self.container)==self.buf_size:
