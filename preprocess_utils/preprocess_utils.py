@@ -149,3 +149,19 @@ def approp_doc(doc):
             yield unicode(tok)
         elif not tok.like_num and not tok.is_stop and not tok.is_punct and tok.is_alpha:
             yield tok.lemma_
+
+
+def walk_dependencies(doc):
+    walks = []
+    for tok in doc:
+        is_term = list(tok.children)
+        if not is_term:
+            tok_ = tok
+            walk = []
+            while tok_ is not tok_.head:
+                walk.append(tok_)
+                tok_ = tok_.head
+            else:
+                walk.append(tok_)
+            walks.append(walk)
+    return walks
