@@ -7,6 +7,7 @@ import sys
 import collections
 import contextlib
 import codecs
+import functools
 
 import spacy
 import gensim
@@ -14,7 +15,7 @@ import gensim
 from preprocess_utils import approp_doc, walk_dependencies
 
 class RawStream:
-    def __init__(self, fd, iteration_hook=None, **kwargs):
+    def __init__(self, fd=None, iteration_hook=None, **kwargs):
         self._file_desc = fd
         self.io_count = 0
         self.iteration_hook = iteration_hook
@@ -70,6 +71,12 @@ class StreamBuffer:
                 container_size=len(self.container),
                 flush_loc = self.flush_loc)
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type_, value, traceback):
+        self.close()
+
     def close(self):
         self.flush()
 
@@ -93,7 +100,29 @@ def make_parser():
             default='./dump')
     parser.add_argument('--debug',
             action='store_true')
+    parser.add_argument('--bufsize',
+            type=int,
+            default=10000)
     return parser
+
+class Pipeline:
+    def __init__(self,flush_loc=None, run_limit=None, debug=False,
+            stream=None, pipe=None, preprocess_hook=None, **kwargs):
+        self.streambuffer = StreamBuffer(flush_loc=flush_loc)
+        self.debug = debug
+        self.run_limit = run_limit
+        self.stream = stream
+        self.pipe = pipe
+        self.preprocess_hook = preprocess_hook
+        self.kwargs = kwargs
+
+    def __call__(self):
+        with self.streambuffer as streambuffer:
+            for idx, doc in enumerate(self.pipe(self.stream,n_threads=4)):
+                streambuffer.append(
+                        self.preprocess_hook(idx=idx, doc=doc, **kwargs))
+
+
 
 
 if __name__ == '__main__':
@@ -107,7 +136,8 @@ if __name__ == '__main__':
     nlp = spacy.en.English()
 
     with open(args.data, mode='r',buffering=-1) as fd, \
-    contextlib.closing(StreamBuffer(flush_loc=args.output)) as streambuffer:
+            StreamBuffer(buf_size=args.bufsize ,flush_loc=args.output) as \
+            streambuffer:
         stream = RawStream(fd,iteration_hook=args.hook)
         logger.info(stream)
         logger.info(streambuffer)
