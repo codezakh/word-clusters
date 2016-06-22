@@ -111,23 +111,23 @@ if __name__ == '__main__':
         logger.info(streambuffer)
 
 
-        for doc in nlp.pipe(stream, n_threads=4):
+        for idx,doc in enumerate(nlp.pipe(stream, n_threads=4)):
             try:
                 streambuffer.append(
                         json.dumps(
                             {'bow':list(approp_doc(doc)),
-                                'idx':stream.io_count}
+                                'idx':idx}
                             ))
             except Exception as error:
                 stream.fault_handler(error, doc)
 
             if args.debug:
-                print(stream.io_count, '\r')
+                print(idx, '\r')
 
-            if stream.io_count == args.run_limit:
-                logger.info('run_limit reached {}'.format(args.run_limit))
+            if idx == args.run_limit:
+                logger.info('run_limit reached {}'.format(idx))
                 break
 
-            elif stream.io_count % 1000 == 0:
+            elif idx % 1000 == 0:
                 logger.info(stream)
                 logger.info(streambuffer)
