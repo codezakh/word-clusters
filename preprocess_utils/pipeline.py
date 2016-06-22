@@ -61,6 +61,13 @@ class StreamBuffer:
             for item in self.container:
                 fd.write(item+'\n')
         self.container.clear()
+    def __iter__(self):
+        for item in self.container:
+            yield item
+
+    def __getitem__(self, key):
+        return self.container[key]
+
     def append(self, item):
         if len(self.container)==self.buf_size:
             self.flush()
@@ -87,7 +94,7 @@ def make_parser():
     parser.add_argument('--data',
             help='Location of data.',
             required=True)
-    parser.add_argument('--run_limit', type=int,
+    parser.add_argument('--run-limit', type=int,
             help='Number of iterations to run for. If not specified, runs \
             until `StopIteration` is raised.')
     parser.add_argument('--hook', type=eval,
@@ -102,7 +109,11 @@ def make_parser():
             action='store_true')
     parser.add_argument('--bufsize',
             type=int,
-            default=10000)
+            default=10000,
+            help='Internal size of the SpaCy and StreamBuffers.')
+    parser.add_argument('--id2word-save',
+            help='Location to store the id2word.',
+            default='./vocab.bin')
     return parser
 
 class Pipeline:
@@ -141,18 +152,23 @@ if __name__ == '__main__':
         stream = RawStream(fd,iteration_hook=args.hook)
         logger.info(stream)
         logger.info(streambuffer)
+        id2word = gensim.corpora.Dictionary(prune_at=None)
 
 
-        for idx,doc in enumerate(nlp.pipe(stream, n_threads=4)):
+        for idx,doc in enumerate(nlp.pipe(stream, n_threads=4,
+            batch_size=args.bufsize)):
             try:
                 bow_doc_extended = approp_doc(
                         itertools.chain.from_iterable(walk_dependencies(doc)))
+                id2word.doc2bow(bow_doc_extended, allow_update=True)
                 streambuffer.append(
                         json.dumps(
                             {'bow':list(bow_doc_extended),
                                 'idx':idx}
                             ))
             except Exception as error:
+                #may not be the best place to handle errors that occur
+                #here
                 stream.fault_handler(error, doc)
 
             if args.debug:
@@ -165,3 +181,6 @@ if __name__ == '__main__':
             elif idx % 1000 == 0:
                 logger.info('{idx}:{stream}|{streambuffer}'.format(
                     idx=idx, stream=stream, streambuffer=streambuffer))
+
+            id2word.save(args.id2word_save)
+
