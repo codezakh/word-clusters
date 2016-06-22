@@ -82,9 +82,6 @@ class StreamBuffer:
         return self
 
     def __exit__(self, type_, value, traceback):
-        self.close()
-
-    def close(self):
         self.flush()
 
 def make_parser():
@@ -138,8 +135,10 @@ class Pipeline:
 
 if __name__ == '__main__':
     logging.basicConfig(
-            format='%(levelname)s %(asctime)s %(funcName)s %(message)s',
-            level=logging.DEBUG)
+            format='%(levelname)s:%(name)s:%(funcName)s:%(message)s',
+            level=logging.DEBUG,
+            filename='pipeline.log',
+            filemode='w')
     parser = make_parser()
     args = parser.parse_args()
     logger = logging.getLogger(__name__)
@@ -178,7 +177,7 @@ if __name__ == '__main__':
                 logger.info('run_limit reached {}'.format(idx))
                 break
 
-            elif idx % 1000 == 0:
+            elif idx % 5000 == 0:
                 logger.info('{idx}:{stream}|{streambuffer}'.format(
                     idx=idx, stream=stream, streambuffer=streambuffer))
 
