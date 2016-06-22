@@ -6,6 +6,7 @@ import logging
 import sys
 import collections
 import contextlib
+import codecs
 
 import spacy
 import gensim
@@ -42,7 +43,7 @@ class RawStream:
 
 
     def fault_handler(self, error, doc):
-        with open('err_dump.txt', 'a') as err_dump:
+        with codecs.open('err_dump.txt', 'a',encoding='utf-8') as err_dump:
             err_dump.write(unicode(doc)+'\n')
         self.logger.error('thrown at {cnt}:{error}'.format(
             cnt=self.io_count,
@@ -54,7 +55,8 @@ class StreamBuffer:
         self.buf_size = buf_size
         self.flush_loc = flush_loc
     def flush(self):
-        with open(self.flush_loc, 'a',buffering=-1) as fd:
+        with codecs.open(self.flush_loc, 'a',encoding='utf-8',
+                buffering=-1) as fd:
             for item in self.container:
                 fd.write(item+'\n')
         self.container.clear()
@@ -114,7 +116,7 @@ if __name__ == '__main__':
         for idx,doc in enumerate(nlp.pipe(stream, n_threads=4)):
             try:
                 bow_doc_extended = approp_doc(
-                        itertools.chain.from_iterable(walk_dependecies(doc)))
+                        itertools.chain.from_iterable(walk_dependencies(doc)))
                 streambuffer.append(
                         json.dumps(
                             {'bow':list(bow_doc_extended),
