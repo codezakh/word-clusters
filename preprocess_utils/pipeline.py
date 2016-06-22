@@ -182,5 +182,5 @@ if __name__ == '__main__':
                 logger.info('{idx}:{stream}|{streambuffer}'.format(
                     idx=idx, stream=stream, streambuffer=streambuffer))
 
-            id2word.save(args.id2word_save)
+        id2word.save(args.id2word_save)
 
