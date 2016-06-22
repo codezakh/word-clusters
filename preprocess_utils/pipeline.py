@@ -113,9 +113,11 @@ if __name__ == '__main__':
 
         for idx,doc in enumerate(nlp.pipe(stream, n_threads=4)):
             try:
+                bow_doc_extended = approp_doc(
+                        itertools.chain.from_iterable(walk_dependecies(doc)))
                 streambuffer.append(
                         json.dumps(
-                            {'bow':list(approp_doc(doc)),
+                            {'bow':list(bow_doc_extended),
                                 'idx':idx}
                             ))
             except Exception as error:
@@ -129,5 +131,5 @@ if __name__ == '__main__':
                 break
 
             elif idx % 1000 == 0:
-                logger.info(stream)
-                logger.info(streambuffer)
+                logger.info('{idx}:{stream}|{streambuffer}'.format(
+                    idx=idx, stream=stream, streambuffer=streambuffer))

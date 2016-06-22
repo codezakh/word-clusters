@@ -5,3 +5,4 @@
 *.ipynb
 err_dump.txt
 **/*.log
+dump
