@@ -154,7 +154,7 @@ if __name__ == '__main__':
         id2word = gensim.corpora.Dictionary(prune_at=None)
 
 
-        for idx,doc in enumerate(nlp.pipe(stream, n_threads=4,
+        for idx,doc in enumerate(nlp.pipe(stream, n_threads=8,
             batch_size=args.bufsize)):
             try:
                 bow_doc_extended = list(approp_doc(
