@@ -157,12 +157,12 @@ if __name__ == '__main__':
         for idx,doc in enumerate(nlp.pipe(stream, n_threads=4,
             batch_size=args.bufsize)):
             try:
-                bow_doc_extended = approp_doc(
-                        itertools.chain.from_iterable(walk_dependencies(doc)))
-                id2word.doc2bow(bow_doc_extended, allow_update=True)
+                bow_doc_extended = list(approp_doc(
+                        itertools.chain.from_iterable(walk_dependencies(doc))))
+                _ = id2word.doc2bow(bow_doc_extended, allow_update=True)
                 streambuffer.append(
                         json.dumps(
-                            {'bow':list(bow_doc_extended),
+                            {'bow':bow_doc_extended,
                                 'idx':idx}
                             ))
             except Exception as error:
