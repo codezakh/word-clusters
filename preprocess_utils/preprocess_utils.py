@@ -115,6 +115,8 @@ def custom_auc_scorer(estimator, X, y):
 def one_vs_rest_clf(X,y):
     class_performance_dict = dict()
     for label in np.unique(y):
+        if np.count_nonzero(y==label) < 4:
+            continue
         clear_output()
         print('label {}'.format(label))
         clf_search = grid_search.RandomizedSearchCV(ensemble.RandomForestClassifier(),
