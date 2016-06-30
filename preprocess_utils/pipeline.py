@@ -1,3 +1,13 @@
+"""
+Objects for passing a a large corpus in json format through a pipeline.
+
+This module provides a number of objects for the purpose of streaming data
+too large to be held in memory from disk. It is meant for use with unicode
+encoded data.
+"""
+
+
+
 from __future__ import print_function 
 import json
 import itertools

@@ -1,3 +1,13 @@
+"""
+Utility functions for `pipeline`. 
+
+`pipeline` uses a number of these functions for transforming the data into
+an acceptable form.
+"""
+
+
+
+
 from __future__ import print_function, absolute_import, division
 import json
 import itertools
@@ -38,7 +48,9 @@ def approp_doc(doc):
     Notes
     ---------
     This is a simple function for stopword removal and lemmatization that
-    relies on SpaCy's defaults and is not domain specific.
+    relies on SpaCy's defaults and is not domain specific. If used, it should
+    come after walk_dependencies because the output of this function is unicode
+    and not SpaCy tokens.
 
     Examples
     -----------
