@@ -15,6 +15,28 @@ import gensim
 from preprocess_utils import approp_doc, walk_dependencies
 
 class RawStream:
+    """Stream data from an iterable file like object, with logging.
+    
+    Parameters
+    ------------
+    fd : file object like
+        A file like object with a context manager.
+    
+    iteration_hook : function
+        A function which carries out optional modifications to the elements
+        return from the stream.
+
+    Examples
+    ------------
+    >>> import json
+    >>> with open('example.json', 'a') as f:
+    >>>     f.write(json.dumps({'a':1, 'b':2})+'\n')
+    >>> with open('example.json', 'r') as f:
+    >>>     stream = RawStream(fd=f, iteration_hook= lambda x: x['b'])
+    >>>     for item in stream:
+    >>>         #do something
+    """
+
     def __init__(self, fd=None, iteration_hook=None, **kwargs):
         self._file_desc = fd
         self.io_count = 0

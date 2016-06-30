@@ -20,6 +20,78 @@ import scipy
 import pandas as pd
 
 
+
+def approp_doc(doc):
+    """Lemmatize and remove stopwords and non-alphabetical characters.
+
+    Parameters
+    ------------
+    doc : spacy.Document
+        The document to clean.
+
+    Returns
+    ------------
+    :generator
+        A non-reusable generator that produces the document with all unacceptable
+        words removed.
+
+    Notes
+    ---------
+    This is a simple function for stopword removal and lemmatization that
+    relies on SpaCy's defaults and is not domain specific.
+
+    Examples
+    -----------
+    >>> import spacy
+    >>> nlp = spacy.en.English()
+    >>> doc = nlp('I am a simple document.')
+    >>> list(approp_doc(doc))
+    [u'simple', u'document']
+    """
+    for tok in doc:
+        if not tok.is_alpha:
+            continue
+        elif is_acronym(unicode(tok)) and not tok.is_punct and not tok.is_stop and not tok.like_num:
+            yield unicode(tok)
+        elif not tok.like_num and not tok.is_stop and not tok.is_punct and tok.is_alpha:
+            yield tok.lemma_
+
+
+def walk_dependencies(doc):
+    """Get all paths to a terminal node in a syntactic dependency tree.
+
+    Parameters
+    ------------
+    doc : spacy.Doc
+        The document to walk the syntactic dependency tree of.
+
+    Returns
+    ----------
+    walks : list
+        Each element of walks is a list which contains words as they are seen
+        while walking the dependency tree from the root.
+
+    Notes
+    ----------
+    This is the function used to generate larger fake documents from a single
+    document. This is useful in the situation where you have a lot of training
+    data but each individual document is small.
+    """
+    walks = []
+    for tok in doc:
+        is_term = list(tok.children)
+        if not is_term:
+            tok_ = tok
+            walk = []
+            while tok_ is not tok_.head:
+                walk.append(tok_)
+                tok_ = tok_.head
+            else:
+                walk.append(tok_)
+            walks.append(walk)
+    return walks
+
+
 def is_acronym(word):
     """Determine whether a word is an acronym.
     
@@ -141,29 +213,3 @@ def best_estimator_word_display(estimator,index2word,topn=10,
         index2word2=None):
     imps = np.argsort(estimator.feature_importances_)[::-1]
     return [index2word[idx] for idx in imps[:topn]]
-
-
-def approp_doc(doc):
-    for tok in doc:
-        if not tok.is_alpha:
-            continue
-        elif is_acronym(unicode(tok)) and not tok.is_punct and not tok.is_stop and not tok.like_num:
-            yield unicode(tok)
-        elif not tok.like_num and not tok.is_stop and not tok.is_punct and tok.is_alpha:
-            yield tok.lemma_
-
-
-def walk_dependencies(doc):
-    walks = []
-    for tok in doc:
-        is_term = list(tok.children)
-        if not is_term:
-            tok_ = tok
-            walk = []
-            while tok_ is not tok_.head:
-                walk.append(tok_)
-                tok_ = tok_.head
-            else:
-                walk.append(tok_)
-            walks.append(walk)
-    return walks
